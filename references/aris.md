@@ -60,11 +60,40 @@ translated: true
 - 已有同名内容时：生成新的带时间戳文件，不覆盖旧版
 - 按需创建子目录（如 `docs/aris/ideas/` 不存在则创建）
 
-**d. 清理**
+**d. 生成完整版**
+
+将本次所有已翻译的文件内容合并为一个完整版文档，放在 `docs/aris/` 根目录：
+
+- 文件名：`YYYY-MM-DD-HHMM-完整翻译.md`
+- 按以下顺序拼接各部分（跳过本次未处理的类别）：
+  1. 想法报告（ideas/）
+  2. 研究叙事（narrative/）
+  3. 论文规划（planning/）
+  4. 方法迭代（methods/）
+  5. 实验记录（experiments/）
+  6. 审稿记录（reviews/）
+  7. 论文正文（paper/）
+  8. 研究发现（findings/）
+  9. 知识库（wiki/）
+- 每个部分用二级标题分隔，如 `## 论文规划`，内容直接引用对应翻译文件的正文（去掉 frontmatter）
+- 文件顶部添加 frontmatter：
+
+```yaml
+---
+updated: YYYY-MM-DD
+status: active
+scope: 本次 aris 所有翻译的合并完整版
+source: aris
+ingested: YYYY-MM-DD HH:MM
+translated: true
+---
+```
+
+**e. 清理**
 
 将项目根目录散落的 ARIS 产出文件（不含 `refine-logs/`、`research-wiki/`、`paper/` 目录）移入 `docs/archive/aris-raw/`，保留原始英文版备查。
 
-**e. 日志**
+**f. 日志**
 
 在 `docs/aris/ingest-log.md` 追加本次操作记录：
 
@@ -75,13 +104,14 @@ translated: true
 - IDEA_REPORT.md → docs/aris/ideas/YYYY-MM-DD-HHMM-想法报告.md
 - AUTO_REVIEW.md → docs/aris/reviews/YYYY-MM-DD-HHMM-审稿记录.md
 - ...
+完整版：docs/aris/YYYY-MM-DD-HHMM-完整翻译.md
 ```
 
-**f. 更新索引**
+**g. 更新索引**
 
-- 更新 `docs/aris/README.md`：列出所有子目录及其中的文件
+- 更新 `docs/aris/README.md`：列出所有子目录及其中的文件，以及完整版文件入口
 - 更新 `docs/README.md`：确保包含 `aris/` 目录的引用条目
 
-**g. 输出**
+**h. 输出**
 
 输出本次处理的文件列表和目标路径，供用户确认。
