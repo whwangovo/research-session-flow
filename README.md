@@ -60,7 +60,7 @@ docs/
 将此仓库克隆到 Claude Code skills 目录：
 
 ```bash
-git clone https://github.com/$(gh api user -q .login)/research-docs-skill ~/.claude/skills/docs
+git clone https://github.com/whwangovo/research-docs-skill ~/.claude/skills/docs
 ```
 
 或手动复制 `SKILL.md` 到 `~/.claude/skills/docs/SKILL.md`。
