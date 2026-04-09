@@ -302,7 +302,16 @@ out-of-scope: 本文档不覆盖什么
 
 5. **生成 slug**：从 session 主题提取 2-4 个关键词，用 `-` 连接（中文转拼音首字母或用英文关键词）。如果 session 主题不明确，从 git log 最近提交信息提取。
 
-6. **生成 `docs/handoffs/YYYY-MM-DD-HHMM-{slug}.md`**：
+6. **Git commit（写文档前）**：在生成交接文档之前，先提交当前工作区的改动：
+   ```bash
+   git diff --cached --quiet && git diff --quiet || (
+     git add -A
+     git commit -m "<根据 git diff 自动生成的 message>"
+   )
+   ```
+   message 生成规则：读取 `git diff HEAD`，根据实际改动生成 `<type>: <summary>`，type 从 feat/fix/refactor/chore/test 中选最合适的。没有未提交改动则跳过。
+
+7. **生成 `docs/handoffs/YYYY-MM-DD-HHMM-{slug}.md`**：
 
 ```markdown
 ---
@@ -332,7 +341,7 @@ status: active
 {需要特别注意的坑、依赖、环境问题等}
 ```
 
-6. **输出**：文件路径 + 内容预览
+8. **输出**：文件路径 + 内容预览
 
 ---
 
@@ -451,14 +460,30 @@ log_file = f"docs/journal/{log_date}-devlog.md"
 - **结尾可选**：如果有明确的下一步，加一句"明天："
 - 长度：150-300 字，不强求，内容决定长度
 
-**d. 写入文件**
+**d. Git commit（写文档前）**
+
+在写日志文件之前，先提交当前工作区的改动：
+
+```bash
+git diff --cached --quiet && git diff --quiet || (
+  git add -A
+  git commit -m "<根据 git diff 自动生成的 message，反映实际代码/配置改动>"
+)
+```
+
+message 生成规则：
+- 读取 `git diff HEAD`，根据改动内容生成一句话 commit message
+- 格式：`<type>: <summary>`，type 从 feat/fix/refactor/chore/test 中选最合适的
+- 如果没有未提交改动，跳过此步
+
+**e. 写入文件**
 
 - 目录：`docs/journal/`（不存在则创建）
 - 文件名：`YYYY-MM-DD-devlog.md`（用 log_date，不是当前时间）
 - 如果文件**不存在**：创建新文件，使用下方模板
 - 如果文件**已存在**（同一天第二次调用）：在文件末尾追加新内容，用 `---` 分隔
 
-**e. 输出**
+**f. 输出**
 
 把写入的日志内容输出给用户确认，不需要额外说明。
 
