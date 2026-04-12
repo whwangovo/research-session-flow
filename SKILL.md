@@ -1,13 +1,13 @@
 ---
 name: docs
-description: "为科研项目生成、更新、归档文档。支持 init/update/status/archive/handoff/migrate/log/aris 子命令。强制单一来源原则：实验数字→results.md，方法→methods/，论文叙事→paper-plan.md。"
+description: "为科研/论文项目生成、更新、归档文档。支持 init/update/status/archive/handoff/migrate/log/aris 子命令。强制单一来源原则：实验数字→results.md，方法→methods/，论文叙事→paper-plan.md。适用于 ML/AI 研究、论文写作、实验管理场景，不适用于前后端工程项目（见 fullstack-docs）。"
 argument-hint: "[init|update|status|archive|handoff|migrate|log|aris] [topic|file]"
 allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, Agent
 file-patterns:
   - "docs/**/*.md"
 triggers:
-  - handoff: 写交接/handoff/交接文档/session结束/记录一下进度/写个总结/下次继续
-  - log: 写日志/记日志/开发日志
+  - handoff: 写交接/handoff/交接文档/session结束/记录一下进度/写个总结/下次继续/科研进度/实验进度
+  - log: 写日志/记日志/开发日志/科研日志/实验日志
   - aris: aris/归档aris/整理aris
 ---
 
