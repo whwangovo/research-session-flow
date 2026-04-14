@@ -57,13 +57,34 @@ docs/
 
 ## 安装
 
-将此仓库克隆到 Claude Code skills 目录：
-
 ```bash
-git clone https://github.com/whwangovo/research-docs-skill ~/.claude/skills/docs
+git clone https://github.com/whwangovo/research-docs-skill
+cd research-docs-skill
+./install.sh
 ```
 
-或手动复制 `SKILL.md` 到 `~/.claude/skills/docs/SKILL.md`。
+安装脚本会自动完成：
+1. 将 skill 复制到 `~/.claude/skills/docs/`
+2. 将 `docs-hook.sh` 复制到 `~/.claude/hooks/`
+3. 在 `~/.claude/settings.json` 中注册 hooks
+
+重启 Claude Code 后生效。
+
+> 依赖：`jq`（`brew install jq`）
+
+## Hook：自动提醒
+
+安装后，每当 Claude 写入 ARIS 产出文件（`IDEA_REPORT.md`、`AUTO_REVIEW.md`、`paper/sections/*.tex` 等）或方法代码、实验结果时，会在回复结束时自动提醒运行对应的 `/docs` 子命令：
+
+```
+[docs] 检测到变更 (AUTO_REVIEW.md) → /docs aris
+```
+
+```
+[docs] 检测到文档相关变更：
+  · CLAIMS_FROM_RESULTS.md, findings.md → /docs aris
+  · src/model.py → /docs update methods
+```
 
 ## 使用
 
@@ -73,4 +94,5 @@ git clone https://github.com/whwangovo/research-docs-skill ~/.claude/skills/docs
 /docs init
 /docs handoff
 /docs status
+/docs aris
 ```
