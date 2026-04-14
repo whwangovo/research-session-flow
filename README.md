@@ -70,6 +70,15 @@ cd research-docs-skill
 
 重启 Claude Code 后生效。
 
+### 更新
+
+在 clone 的仓库目录下重跑：
+
+```bash
+./install.sh --update        # 拉取最新并更新（工作区脏会中止）
+./install.sh --force         # 强制同步到远程，丢弃本地修改
+```
+
 > 依赖：`jq`（`brew install jq`）
 
 ## Hook：自动提醒
