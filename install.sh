@@ -1,8 +1,29 @@
 #!/bin/bash
 # install.sh — research-docs-skill 安装脚本
 # 安装 skill + docs-hook（ARIS/代码变更后提醒运行 /docs 子命令）
+#
+# 用法：
+#   ./install.sh                安装（已存在则跳过 skill 覆盖）
+#   ./install.sh --update       git pull --ff-only 拉取最新并覆盖 skill / hook；
+#                               工作区有未提交修改时会中止
+#   ./install.sh --force        强制同步到远程（git fetch + reset --hard），
+#                               丢弃本地对 skill / hook / references 的任何改动
 
 set -euo pipefail
+
+UPDATE=0
+FORCE=0
+for arg in "$@"; do
+  case "$arg" in
+    --update) UPDATE=1 ;;
+    --force)  FORCE=1 ;;
+    -h|--help)
+      sed -n '2,9p' "$0"; exit 0 ;;
+    *)
+      echo "未知参数: $arg" >&2; exit 1 ;;
+  esac
+done
+OVERWRITE=$(( UPDATE | FORCE ))
 
 SKILL_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}/skills/docs"
 HOOKS_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks"
@@ -11,18 +32,44 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 echo "=== research-docs-skill 安装 ==="
 
+# ── 0. 同步仓库（--update / --force） ──────────────────────
+if [[ "$OVERWRITE" -eq 1 ]]; then
+  echo ""
+  echo "→ 同步仓库 ($SCRIPT_DIR)"
+  if [[ ! -d "$SCRIPT_DIR/.git" ]]; then
+    echo "  ⚠️  $SCRIPT_DIR 不是 git 仓库，跳过同步" >&2
+  elif [[ "$FORCE" -eq 1 ]]; then
+    # 强制同步到远程 upstream，丢弃本地所有改动
+    BRANCH=$(git -C "$SCRIPT_DIR" branch --show-current)
+    UPSTREAM=$(git -C "$SCRIPT_DIR" rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null || echo "origin/$BRANCH")
+    echo "  fetch + reset --hard $UPSTREAM （丢弃本地修改）"
+    git -C "$SCRIPT_DIR" fetch "${UPSTREAM%%/*}"
+    git -C "$SCRIPT_DIR" reset --hard "$UPSTREAM"
+    echo "  完成"
+  else
+    # --update: 要求工作区干净
+    if ! git -C "$SCRIPT_DIR" diff --quiet || ! git -C "$SCRIPT_DIR" diff --cached --quiet; then
+      echo "  ⚠️  工作区有未提交修改，已中止。" >&2
+      echo "       · 若要保留本地修改：请先 commit / stash 后再重试 --update" >&2
+      echo "       · 若要丢弃本地修改、强制同步到远程最新：改用 --force" >&2
+      exit 1
+    fi
+    git -C "$SCRIPT_DIR" pull --ff-only
+    echo "  完成"
+  fi
+fi
+
 # ── 1. 安装 skill ──────────────────────────────────────────
 
 echo ""
 echo "→ 安装 skill 到 $SKILL_DIR"
 
-if [[ -d "$SKILL_DIR" ]]; then
-  echo "  已存在，跳过（如需更新请手动 git pull）"
+if [[ -d "$SKILL_DIR" && "$OVERWRITE" -ne 1 ]]; then
+  echo "  已存在，跳过（--update 拉取最新并覆盖；--force 强制同步到远程）"
 else
-  mkdir -p "$SKILL_DIR"
-  cp "$SCRIPT_DIR/SKILL.md" "$SKILL_DIR/SKILL.md"
   mkdir -p "$SKILL_DIR/references"
-  cp "$SCRIPT_DIR/references/aris.md" "$SKILL_DIR/references/aris.md"
+  cp -f "$SCRIPT_DIR/SKILL.md" "$SKILL_DIR/SKILL.md"
+  cp -f "$SCRIPT_DIR/references/aris.md" "$SKILL_DIR/references/aris.md"
   echo "  完成"
 fi
 
