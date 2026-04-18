@@ -26,7 +26,7 @@
 | `update` | 更新指定文档 |
 | `status` | 文档健康检查 |
 | `archive` | 归档旧文档 |
-| `handoff` | 生成交接文档（session 结束时使用） |
+| `handoff` | 生成交接文档（session 结束时使用），自动回顾并归档已完成的旧 handoff |
 | `migrate` | 迁移旧结构到标准结构 |
 | `log` | 写开发日志 |
 | `aris` | 归档 ARIS 产出为中文版，并生成合并完整版 |
@@ -50,6 +50,8 @@ docs/
 ├── evaluation/
 │   └── results.md         # 实验数字唯一来源
 ├── handoffs/
+│   ├── resolved/          # 已完成的交接文档（历史存档）
+│   └── YYYY-MM-DD-HHMM-slug.md
 ├── journal/
 ├── aris/
 └── archive/
@@ -94,6 +96,14 @@ cd research-docs-skill
   · CLAIMS_FROM_RESULTS.md, findings.md → /docs aris
   · src/model.py → /docs update methods
 ```
+
+## Handoff 生命周期
+
+交接文档不是写完就堆着——每次 `/docs handoff` 会自动回顾活跃的 handoff，把「下一步」已全部完成的移入 `handoffs/resolved/`，并更新 CLAUDE.md 的 `## Last Handoff` 节。
+
+- 新 session 开始时，Claude 从 CLAUDE.md 直接看到上次停在哪
+- 「下一步」采用指令型格式：先读什么 → 跑什么确认 → 再做什么
+- `resolved/` 目录保留历史，方便回溯迭代过程
 
 ## 使用
 
