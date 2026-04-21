@@ -145,7 +145,7 @@ translated: true
 **h. 更新索引**
 
 - 更新 `docs/aris/README.md`：列出所有子目录及其中的文件，以及完整版文件入口
-- 更新 `docs/README.md`：确保包含 `aris/` 目录的引用条目（`/docs status` 扫描时会包含此目录）
+- 执行 `[P3: README 索引同步]`（定义见 SKILL.md 共享流程）确保 `docs/README.md` 包含 `aris/` 目录条目
 
 **i. 输出**
 
