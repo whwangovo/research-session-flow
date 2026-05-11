@@ -69,6 +69,11 @@ if [[ -d "$SKILL_DIR" && "$OVERWRITE" -ne 1 ]]; then
 else
   mkdir -p "$SKILL_DIR/references"
   cp -f "$SCRIPT_DIR/SKILL.md" "$SKILL_DIR/SKILL.md"
+  cp -f "$SCRIPT_DIR/references/init.md" "$SKILL_DIR/references/init.md"
+  cp -f "$SCRIPT_DIR/references/update.md" "$SKILL_DIR/references/update.md"
+  cp -f "$SCRIPT_DIR/references/status.md" "$SKILL_DIR/references/status.md"
+  cp -f "$SCRIPT_DIR/references/handoff.md" "$SKILL_DIR/references/handoff.md"
+  cp -f "$SCRIPT_DIR/references/log.md" "$SKILL_DIR/references/log.md"
   cp -f "$SCRIPT_DIR/references/aris.md" "$SKILL_DIR/references/aris.md"
   cp -f "$SCRIPT_DIR/references/dashboards.md" "$SKILL_DIR/references/dashboards.md"
   echo "  完成"
