@@ -1,36 +1,37 @@
-# research-docs-skill
+# research-session-flow
 
-一个 [Claude Code](https://claude.ai/code) skill，用于科研项目的文档生成、更新与归档管理。
+一个 [Claude Code](https://claude.ai/code) skill，用于科研项目的初始化、文档维护、session 交接与日终收束。
 
 ---
 
 科研项目的文档问题，往往不是从一开始就乱的。
 
-跑到第三次实验迭代的时候，发现 results.md、paper-plan 和邮件附件里各有一个 accuracy，三个数字没有一个一样。改到 V7 版本，已经不记得 V3 和 V4 到底改了什么、哪次跑出来的结果还算数。session 结束前忘了写交接，第二天重新打开项目，光是回忆"上次做到哪"就花了半小时。
+跑到第三次实验迭代的时候，发现 results.md、paper-plan 和邮件附件里各有一个 accuracy，三个数字没有一个一样。改到 V7 版本，已经不记得 V3 和 V4 到底改了什么、哪次跑出来的结果还算数。session 结束前忘了写交接，第二天重新打开项目，光是回忆"上次做到哪"就花了半小时。工作区还堆着二十个未提交文件，git log 已经一周没动。
 
 这些不是粗心，是科研项目没有文档结构的必然结果。
 
-`research-docs-skill` 是一个面向 Claude Code 的文档管理 skill，通过强制单一来源原则解决这个问题——`results.md` 是实验数字的唯一权威，`paper-plan.md` 是论文叙事的唯一权威，方法描述、版本日志各归其位，不再散落。无论是日常更新、session 交接还是 ARIS 归档，一条指令完成，进度随时可接续。
+`research-session-flow` 是一个面向 Claude Code 的科研项目管理 skill。设计上有三条硬规则：
+
+- **单一来源**：`results.md` 是实验数字的唯一权威，`paper-plan.md` 是论文叙事的唯一权威，方法描述、版本日志各归其位
+- **session-first**：每个 session 必须写 handoff。handoff 是 session 粒度的 immutable append-only 日志——同 session 内原地重写，跨 session 的 handoff 内容只读
+- **handoff 轻，log 重**：handoff 纯文本快速收束不碰 git；log 做日终完整收束，包含分组 commit
 
 ---
-
-## 功能
-
-统一管理科研项目文档结构，强制执行**单一来源原则**（实验数字、方法描述、论文叙事各有唯一权威文件），避免多文件数字不一致。
 
 ## 支持的子命令
 
 | 子命令 | 说明 |
 |--------|------|
-| `init` | 初始化标准文档结构（自动检测：新建 / 迁移旧结构 / 版本升级） |
-| `update` | 更新文档 + 归档过期文档 |
+| `init` | 初始化。幂等覆盖三种场景：空目录冷启动（git + README + CLAUDE.md + gitignore + docs 全套）/ 旧结构迁移 / 版本升级 |
+| `handoff` | 写当前 session 交接。同 session 内原地重写，跨 session 写新文件；自动把"下一步"全完成的历史 handoff 搬到 `resolved/` |
+| `log` | 日终收尾：写当天开发日志 + 按语义类别分组 commit 未提交改动 |
+| `update` | 更新过期文档 |
 | `status` | 文档健康检查（默认子命令） |
-| `archive` | 单文件归档 |
-| `handoff` | 生成交接文档，自动回顾并归档已完成的旧 handoff |
-| `log` | 写开发日志 |
 | `aris` | 归档 ARIS 产出为中文版，并生成合并完整版 |
+| `dashboard` | HTML 交互看板管理（list / new / render / status） |
 
-> `migrate` 已并入 `init`，作为别名保留向后兼容。
+> `new` 和 `migrate` 都是 `init` 的别名，向后兼容。
+> archive 生命周期由用户手动 `git mv` 管理——`/research archive` 当作 `status` 的别名执行。
 
 ## 触发关键词
 
@@ -41,35 +42,41 @@
 ## 标准文档结构
 
 ```
-docs/
-├── README.md
-├── project/
-│   ├── overview.md        # 项目 dashboard
-│   └── paper-plan.md      # 论文规划（唯一）
-├── data/
-├── methods/
-├── evaluation/
-│   └── results.md         # 实验数字唯一来源
-├── handoffs/
-│   ├── resolved/          # 已完成的交接文档（历史存档）
-│   └── YYYY-MM-DD-HHMM-slug.md
-├── journal/
-├── aris/
-└── archive/
+项目根/
+├── docs/
+│   ├── README.md
+│   ├── project/
+│   │   ├── overview.md        # 项目 dashboard
+│   │   └── paper-plan.md      # 论文规划（唯一）
+│   ├── data/
+│   ├── methods/
+│   ├── evaluation/
+│   │   └── results.md         # 实验数字唯一来源
+│   ├── dashboards/            # HTML 交互看板（含 render/ 生成器）
+│   ├── handoffs/
+│   │   ├── resolved/          # 已完成的交接文档
+│   │   └── YYYY-MM-DD-HHMM-slug.md
+│   ├── journal/               # 每日开发日志
+│   └── aris/
+├── archive/
+│   └── docs/                  # 文档归档入口（用户手动管理）
+│       ├── deprecated/
+│       └── scratch/
+└── scratch/                   # 一次性 HTML 便签（gitignored）
+    └── README.md
 ```
 
 ## 安装
 
 ```bash
-git clone https://github.com/whwangovo/research-docs-skill
-cd research-docs-skill
+git clone https://github.com/whwangovo/research-session-flow
+cd research-session-flow
 ./install.sh
 ```
 
-安装脚本会自动完成：
-1. 将 skill 复制到 `~/.claude/skills/docs/`
-2. 将 `docs-hook.sh` 复制到 `~/.claude/hooks/`
-3. 在 `~/.claude/settings.json` 中注册 hooks
+安装脚本会：
+1. 将 skill 复制到 `~/.claude/skills/research/`
+2. 检测并清理旧 `docs` skill 安装（旧 skill 目录和 hook 脚本给出手动清理提示；`settings.json` 里的旧 hook 条目自动清除）
 
 重启 Claude Code 后生效。
 
@@ -82,37 +89,53 @@ cd research-docs-skill
 ./install.sh --force         # 强制同步到远程，丢弃本地修改
 ```
 
-> 依赖：`jq`（`brew install jq`）
+## 两条核心工作流
 
-## Hook：自动提醒
+### handoff：session 闭环
 
-安装后，每当 Claude 写入 ARIS 产出文件（`IDEA_REPORT.md`、`AUTO_REVIEW.md`、`paper/sections/*.tex` 等）或方法代码、实验结果时，会在回复结束时自动提醒运行对应的 `/docs` 子命令：
+`/research handoff` 是每个 session 的收尾动作。核心语义：
 
-```
-[docs] 检测到变更 (AUTO_REVIEW.md) → /docs aris
-```
+- **session 粒度 immutable**：每个 handoff 归属一个 session（frontmatter `session_id`）。同 session 多次跑 → **原地重写**当前文件反映迄今所有工作；跨 session → 新建文件
+- **历史 handoff 只读**：永远不修改别人 session 的 handoff 正文；唯一合法动作是"下一步全部完成" → 整体 `mv` 到 `resolved/`
+- **不碰 git**：纯文本收束，耗时可控
+- **自动同步 CLAUDE.md**：`## Last Handoff` 节指向活跃 handoff，新 session 打开项目直接看到上次停在哪
 
-```
-[docs] 检测到文档相关变更：
-  · CLAIMS_FROM_RESULTS.md, findings.md → /docs aris
-  · src/model.py → /docs update methods
-```
+handoff 的五段固定结构：已完成 / 当前状态 / 关键决策 / 下一步 / 注意事项。「下一步」用祈使句（读 X → 运行 Y → 做 Z），新 session 第一件事就能对照执行。
 
-## Handoff 生命周期
+### log：日终收束
 
-交接文档不是写完就堆着——每次 `/docs handoff` 会自动回顾活跃的 handoff，把「下一步」已全部完成的移入 `handoffs/resolved/`，并更新 CLAUDE.md 的 `## Last Handoff` 节。
+`/research log` 是一天收尾，把散落的工作归拢：
 
-- 新 session 开始时，Claude 从 CLAUDE.md 直接看到上次停在哪
-- 「下一步」采用指令型格式：先读什么 → 跑什么确认 → 再做什么
-- `resolved/` 目录保留历史，方便回溯迭代过程
+1. **写 devlog**：`docs/journal/YYYY-MM-DD-devlog.md`（不存在则建，存在则追加）
+2. **分组 commit**：按语义类别自动分组当天所有未提交改动，每组一个 commit
+
+分组映射（按 conventional commits 风格）：
+
+| 类别 | 匹配 | commit 前缀 |
+|------|------|-----------|
+| docs | `docs/**`、`README.md`、`CLAUDE.md` | `docs:` |
+| 方法代码 | `src/**`、`method/**` | `feat:` / `refactor:` / `fix:` |
+| 实验结果 | `evaluation/**`、`data/output/**`、`results/**` | `results:` |
+| 测试 | `tests/**` | `test:` |
+| 配置 / 依赖 | `pyproject.toml`、`package.json`、`.gitignore` | `chore:` |
+| 论文 | `paper/**` | `paper:` |
+
+分组 ≥3 或文件数 ≥10 时会展示计划让你确认；否则直接执行。commit 语言 / 风格自动跟随仓库 `git log -10` 的历史习惯。敏感文件（`.env` / `*.key` / `*.pem` / `credentials*`）自动跳过并警告。
+
+**顺序关键**：先写 devlog → 再 commit。这样当天日志本身会进入 `docs:` 分组，日终 `git status` 完全干净。
+
+log 不做 `git push`——推送是独立的 deliberate 动作。
 
 ## 使用
 
 在 Claude Code 中直接说：
 
 ```
-/docs init
-/docs handoff
-/docs status
-/docs aris
+/research init my-paper      # 空目录冷启动，或已有项目补全/升级
+/research handoff            # 写当前 session 交接
+/research log                # 日终：写日志 + 分组 commit
+/research status             # 文档健康检查
+/research aris               # 翻译归档 ARIS 产出
 ```
+
+典型一天的节奏：若干次 `handoff` 分散在 session 之间 → 一次 `log` 在当天结束时做总收束。

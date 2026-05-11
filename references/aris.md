@@ -2,7 +2,7 @@
 
 **目标**：扫描 ARIS skills 产出的英文文档，翻译为中文，归档到 `docs/aris/` 统一管理。
 
-**参数**：`/docs aris [--dry-run] [--force]`
+**参数**：`/research aris [--dry-run] [--force]`
 
 - `--dry-run`：只输出将要处理的文件列表，不执行任何写入
 - `--force`：跳过去重过滤，强制重新处理所有文件
@@ -122,11 +122,19 @@ translated: true
 ---
 ```
 
-**f. 清理**
+**f. 清理（不自动执行）**
 
-将项目根目录散落的 ARIS 产出文件（不含 `refine-logs/`、`research-wiki/`、`paper/` 目录）列出，**等待用户确认**后移入 `docs/archive/aris-raw/`，保留原始英文版备查。
+将项目根目录散落的原始英文 ARIS 产出文件（不含 `refine-logs/`、`research-wiki/`、`paper/` 目录）列出，给出**手动归档建议命令**：
 
-如果没有需要清理的文件，跳过此步骤。
+```
+ℹ️  以下原始英文 ARIS 文件仍在项目根，建议手动归档（保留原文备查）：
+    mkdir -p archive/docs/aris-raw
+    mv IDEA_REPORT.md archive/docs/aris-raw/
+    mv AUTO_REVIEW.md archive/docs/aris-raw/
+    ...
+```
+
+**skill 不自动 `mv`**——archive 生命周期由用户管理。如果没有需要清理的文件，跳过此步骤。
 
 **g. 日志**
 

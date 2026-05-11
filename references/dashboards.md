@@ -2,7 +2,7 @@
 
 **目标**：管理 `docs/dashboards/` 下的 HTML 交互看板（L2 界面层），把实验数据的机器渲染、人工校对、论文引用三条链清晰分开。
 
-**参数**：`/docs dashboard [list|new <slug>|render <slug>|status]`
+**参数**：`/research dashboard [list|new <slug>|render <slug>|status]`
 
 - `list`（或无参数）：列出所有已有 dashboard 和上次渲染时间
 - `new <slug>`：创建生成器骨架和占位 HTML
@@ -143,7 +143,7 @@ if __name__ == "__main__":
 
 **c. 无 dashboard 时**
 
-输出：`docs/dashboards/ 为空。运行 /docs dashboard new <slug> 创建第一个 dashboard。`
+输出：`docs/dashboards/ 为空。运行 /research dashboard new <slug> 创建第一个 dashboard。`
 
 ---
 
@@ -161,7 +161,7 @@ if __name__ == "__main__":
 写两个文件（目录不存在则创建）：
 
 1. `docs/dashboards/render/<slug>.py`：上文"脚本结构"模板，`<slug>` 已替换
-2. `docs/dashboards/<slug>.html`：占位 HTML，提示"未渲染，运行 `/docs dashboard render <slug>` 生成"
+2. `docs/dashboards/<slug>.html`：占位 HTML，提示"未渲染，运行 `/research dashboard render <slug>` 生成"
 
 占位 HTML 内容：
 
@@ -176,7 +176,7 @@ if __name__ == "__main__":
 <body class="bg-slate-50 flex items-center justify-center h-screen">
 <div class="text-center text-slate-500">
   <div class="text-lg mb-2">占位 dashboard</div>
-  <div class="text-sm">运行 <code class="bg-slate-200 px-2 py-0.5 rounded">/docs dashboard render &lt;slug&gt;</code> 生成内容</div>
+  <div class="text-sm">运行 <code class="bg-slate-200 px-2 py-0.5 rounded">/research dashboard render &lt;slug&gt;</code> 生成内容</div>
 </div>
 </body>
 </html>
@@ -187,7 +187,7 @@ if __name__ == "__main__":
 输出：
 - 骨架已创建路径
 - 需要手动补充：`SOURCES` 数据路径、`HTML_TEMPLATE` 的 `<script>` 渲染逻辑
-- 补完后运行 `/docs dashboard render <slug>`
+- 补完后运行 `/research dashboard render <slug>`
 
 **d. 执行 [P3: README 索引同步]**
 
@@ -254,7 +254,7 @@ dashboard 视为 stale 当：
 
 **d. 汇总**
 
-输出：`N 个 dashboard 中 M 个 stale。运行 /docs dashboard render <slug> 重渲染。`
+输出：`N 个 dashboard 中 M 个 stale。运行 /research dashboard render <slug> 重渲染。`
 
 ---
 
@@ -264,7 +264,6 @@ dashboard 视为 stale 当：
 |-------|-------|
 | Init | 场景 A/B2 创建 `docs/dashboards/` + `render/` + `dashboards/README.md` 骨架 |
 | Status | 扫描时列出 dashboards，标记 stale 数量 |
-| Archive | `archive promote <scratch-file>` 把 `scratch/*.html` 搬到 dashboards（含生成器骨架） |
 | P3 | README 索引扫描范围包括 `docs/dashboards/*.html`，类型列标 `HTML` |
 
 ---
