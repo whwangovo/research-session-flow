@@ -1,6 +1,6 @@
 #!/bin/bash
 # install.sh — research skill 安装脚本
-# 安装 research skill 到 ~/.claude/skills/research/；清理旧 docs 安装。
+# 安装 research skill 到 ~/.claude/skills/research/ 和 ~/.codex/skills/research/；清理旧 docs 安装。
 #
 # 用法：
 #   ./install.sh                安装（已存在则跳过覆盖）
@@ -25,7 +25,8 @@ for arg in "$@"; do
 done
 OVERWRITE=$(( UPDATE | FORCE ))
 
-SKILL_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}/skills/research"
+CLAUDE_SKILL_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}/skills/research"
+CODEX_SKILL_DIR="${CODEX_HOME:-$HOME/.codex}/skills/research"
 HOOKS_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks"
 SETTINGS_FILE="${CLAUDE_CONFIG_DIR:-$HOME/.claude}/settings.json"
 OLD_SKILL_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}/skills/docs"
@@ -61,23 +62,31 @@ fi
 
 # ── 1. 安装 skill ──────────────────────────────────────────
 
-echo ""
-echo "→ 安装 skill 到 $SKILL_DIR"
+install_to() {
+  local target="$1"
+  local label="$2"
+  echo ""
+  echo "→ 安装 skill 到 $target ($label)"
 
-if [[ -d "$SKILL_DIR" && "$OVERWRITE" -ne 1 ]]; then
-  echo "  已存在，跳过（--update 拉取最新并覆盖；--force 强制同步到远程）"
-else
-  mkdir -p "$SKILL_DIR/references"
-  cp -f "$SCRIPT_DIR/SKILL.md" "$SKILL_DIR/SKILL.md"
-  cp -f "$SCRIPT_DIR/references/init.md" "$SKILL_DIR/references/init.md"
-  cp -f "$SCRIPT_DIR/references/update.md" "$SKILL_DIR/references/update.md"
-  cp -f "$SCRIPT_DIR/references/status.md" "$SKILL_DIR/references/status.md"
-  cp -f "$SCRIPT_DIR/references/handoff.md" "$SKILL_DIR/references/handoff.md"
-  cp -f "$SCRIPT_DIR/references/log.md" "$SKILL_DIR/references/log.md"
-  cp -f "$SCRIPT_DIR/references/aris.md" "$SKILL_DIR/references/aris.md"
-  cp -f "$SCRIPT_DIR/references/dashboards.md" "$SKILL_DIR/references/dashboards.md"
+  if [[ -d "$target" && "$OVERWRITE" -ne 1 ]]; then
+    echo "  已存在，跳过（--update 拉取最新并覆盖；--force 强制同步到远程）"
+    return
+  fi
+
+  mkdir -p "$target/references"
+  cp -f "$SCRIPT_DIR/SKILL.md" "$target/SKILL.md"
+  cp -f "$SCRIPT_DIR/references/init.md" "$target/references/init.md"
+  cp -f "$SCRIPT_DIR/references/update.md" "$target/references/update.md"
+  cp -f "$SCRIPT_DIR/references/status.md" "$target/references/status.md"
+  cp -f "$SCRIPT_DIR/references/handoff.md" "$target/references/handoff.md"
+  cp -f "$SCRIPT_DIR/references/log.md" "$target/references/log.md"
+  cp -f "$SCRIPT_DIR/references/aris.md" "$target/references/aris.md"
+  cp -f "$SCRIPT_DIR/references/dashboards.md" "$target/references/dashboards.md"
   echo "  完成"
-fi
+}
+
+install_to "$CLAUDE_SKILL_DIR" "Claude Code"
+install_to "$CODEX_SKILL_DIR" "Codex"
 
 # ── 2. 清理旧 docs 安装 ─────────────────────────────────────
 

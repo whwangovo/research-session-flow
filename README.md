@@ -59,8 +59,10 @@
 │   └── docs/                  # 文档归档入口（用户手动管理）
 │       ├── deprecated/
 │       └── scratch/
-└── scratch/                   # 一次性 HTML 便签（gitignored）
-    └── README.md
+├── scratch/                   # 一次性 HTML 便签（gitignored）
+│   └── README.md
+├── CLAUDE.md                  # Claude Code 入口
+└── AGENTS.md                  # Codex 入口（内容：@ CLAUDE.md）
 ```
 
 ## 安装
@@ -72,10 +74,10 @@ cd research-session-flow
 ```
 
 安装脚本会：
-1. 将 skill 复制到 `~/.claude/skills/research/`
+1. 将 skill 同时复制到 `~/.claude/skills/research/`（Claude Code）和 `~/.codex/skills/research/`（Codex）
 2. 检测并清理旧 `docs` skill 安装（旧 skill 目录和 hook 脚本给出手动清理提示；`settings.json` 里的旧 hook 条目自动清除）
 
-重启 Claude Code 后生效。
+重启 Claude Code / Codex 后生效。
 
 ### 更新
 

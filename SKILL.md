@@ -109,7 +109,7 @@ session_id: xxx       # 仅 handoff：标识产出该文件的 session，immutab
 
 ## 子命令路由
 
-根据 `$ARGUMENTS` 起始词，读取对应 reference 文件后按其中步骤执行。所有 reference 位于 `${CLAUDE_SKILL_DIR}/references/`。
+根据 `$ARGUMENTS` 起始词，读取对应 reference 文件后按其中步骤执行。reference 路径相对 skill 目录（Claude: `~/.claude/skills/research/references/`；Codex: `~/.codex/skills/research/references/`）。
 
 | `$ARGUMENTS` 起始词 | 详细流程 |
 |---------------------|---------|
@@ -144,6 +144,7 @@ session_id: xxx       # 仅 handoff：标识产出该文件的 session，immutab
 | **v3 缺失：`docs/dashboards/` 不存在** | v3 新增的界面层目录 | init 补建 |
 | **v3 缺失：项目根 `scratch/` 不存在** | v3 新增的一次性 HTML 便签区 | init 补建（带 .gitignore） |
 | **v3 缺失：项目根 `archive/docs/` 不存在** | v3 新增的文档归档入口骨架 | init 补建（带 .gitkeep） |
+| **v3 缺失：根 `AGENTS.md` 不存在** | Codex 兼容入口（内容指向 CLAUDE.md） | init 补建 |
 | **dashboard 无对应生成器** | `docs/dashboards/foo.html` 存在但无 `render/foo.py` | 报告，提醒补生成器或删除 |
 | **HTML 生成器散落 `scripts/`** | `scripts/render_*.py`、`scripts/dashboard_*.py` | 报告，建议搬到 `docs/dashboards/render/` |
 | **HTML 散落项目根** | 项目根的 `dashboard.html`、`*.html`（非 skill 约定位置） | 报告，建议进 `docs/dashboards/` 或 `scratch/` |

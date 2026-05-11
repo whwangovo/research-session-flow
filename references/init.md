@@ -150,7 +150,17 @@ __pycache__/
 科研项目
 ```
 
-**f. 创建目录结构**
+**f. 根 `AGENTS.md`（Codex 入口，指向 CLAUDE.md）**
+
+只在不存在时创建，已存在跳过。目的是让 Codex 运行时通过 AGENTS.md 读到与 CLAUDE.md 完全一致的内容，避免双份维护。
+
+```markdown
+@ CLAUDE.md
+
+当你需要修改 AGENTS.md时，转而修改 CLAUDE.md
+```
+
+**g. 创建目录结构**
 
 始终创建（v3）：
 - `docs/project/`、`docs/handoffs/`、`docs/handoffs/resolved/`
@@ -160,7 +170,7 @@ __pycache__/
 
 按需创建（检测到对应代码时）：`docs/data/`、`docs/methods/`、`docs/evaluation/`
 
-**g. 生成文档骨架**
+**h. 生成文档骨架**
 
 每个文档使用 frontmatter（`updated`、`status: draft`、`scope`）：
 
@@ -171,9 +181,9 @@ __pycache__/
 - `scratch/README.md`：说明 scratch 的三条规则（一次性、不被引用、要留快照自己手动 `mv` 到 `archive/docs/scratch/YYYY-MM/`）
 - 其他按需创建的目录下放 `status: draft` 骨架文件
 
-**h. 执行 [P4: CLAUDE.md 同步]**（sync_type=`doc-section`）
+**i. 执行 [P4: CLAUDE.md 同步]**（sync_type=`doc-section`）
 
-**i. 输出**
+**j. 输出**
 
 - 列出新建 / 跳过的文件
 - 下一步建议：
@@ -199,6 +209,7 @@ __pycache__/
 - 使用 `git mv` 执行重命名（保留 git 历史）
 - 补建缺失目录（含 v3 新增：`docs/dashboards/`、`archive/docs/`、`scratch/`）
 - 更新 `.gitignore`（参照场景 A.c）
+- 补建根 `AGENTS.md`（若不存在，参照场景 A.f）
 - 在 `docs/README.md` frontmatter 中写入 `schema_version: 3`
 
 **c. 执行 [P3: README 索引同步]**
@@ -213,9 +224,10 @@ __pycache__/
    - 项目根 `scratch/` + `scratch/README.md`
 2. 更新项目根 `.gitignore`（参照场景 A.c）
 3. 写 `docs/dashboards/README.md` 骨架（若不存在）
-4. 在 `docs/README.md` frontmatter 中写入 `schema_version: 3`
-5. 执行 `[P3: README 索引同步]`
-6. **不自动迁移** `docs/archive/*`——在输出末尾报告：
+4. **补建根 `AGENTS.md`**（若不存在，参照场景 A.f）——Codex 兼容入口，内容指向 `CLAUDE.md`
+5. 在 `docs/README.md` frontmatter 中写入 `schema_version: 3`
+6. 执行 `[P3: README 索引同步]`
+7. **不自动迁移** `docs/archive/*`——在输出末尾报告：
 
    ```
    ⚠️ 检测到 docs/archive/ 仍存在（v2 语义）。v3 语义下文档归档在项目根 archive/docs/。
