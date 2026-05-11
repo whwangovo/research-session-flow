@@ -1,1 +1,19 @@
+# OS / editor
+.DS_Store
+
+# OMC workspace
 .omc/
+
+# local workspace (not shared by default)
+/docs/
+/archive/
+
+# external / submodule-managed
+/paper/
+/data/
+
+# *.json 默认不推，按需白名单
+*.json
+!package.json
+!package-lock.json
+!tsconfig*.json
