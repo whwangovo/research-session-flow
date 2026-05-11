@@ -15,44 +15,81 @@ triggers:
 
 ## 标准文档结构
 
-所有项目统一使用以下结构：
+所有项目统一使用以下结构（**schema v3**）：
 
 ```
-docs/
-├── README.md                    # 索引、阅读顺序、文档健康摘要（含 schema_version）
-├── project/                     # 项目状态 + 论文规划
-│   ├── overview.md              # 纯 dashboard：快照、工作进度、文档入口（不放结论/叙事）
-│   └── paper-plan.md            # 论文唯一规划文件：叙事、章节 scope、图表、时间线
-├── data/                        # 数据规范、schema、标注指南（数据密集型项目）
-├── methods/                     # 方法设计、框架、消融设计
-├── evaluation/                  # 评测协议、结果、分析
-│   └── results.md               # 所有实验数字的唯一权威来源
-├── handoffs/                    # 交接文档（唯一位置）
-│   ├── resolved/                # 已完成的交接文档
-│   └── YYYY-MM-DD-HHMM-slug.md
-├── journal/                     # 每日开发日志（唯一位置）
-│   └── YYYY-MM-DD-devlog.md
-├── aris/                        # ARIS skills 产出的中文翻译版（唯一位置）
-│   ├── ideas/ narrative/ planning/ experiments/ reviews/
-│   ├── methods/ wiki/ paper/ findings/
-│   ├── ingest-log.md            # aris 操作日志
-│   └── README.md                # aris 子目录索引
-├── deliverables/                # 正式交付物（可选）
-└── archive/                     # 归档（唯一位置）
-    ├── YYYY-MM-DD/              # 批量归档（重构/方向变更）
-    │   └── _reason.md
-    └── deprecated/              # 单个废弃文件
+项目根/
+├── docs/                        # 活跃文档（MD 记忆层 + dashboards 界面层）
+│   ├── README.md                # 索引、阅读顺序、文档健康摘要（含 schema_version）
+│   ├── project/                 # 项目状态 + 论文规划
+│   │   ├── overview.md          # 纯 dashboard：快照、工作进度、文档入口（不放结论/叙事）
+│   │   └── paper-plan.md        # 论文唯一规划文件：叙事、章节 scope、图表、时间线
+│   ├── data/                    # 数据规范、schema、标注指南（数据密集型项目）
+│   ├── methods/                 # 方法设计、框架、消融设计
+│   ├── evaluation/              # 评测协议、结果、分析
+│   │   └── results.md           # 实验数字的被引用权威（人工校对，来自 dashboards）
+│   ├── dashboards/              # HTML 交互看板（界面层，唯一位置）
+│   │   ├── README.md            # dashboard 索引 + 刷新命令
+│   │   ├── <slug>.html          # 生成产物（inline data，双击可看）
+│   │   └── render/              # 生成器脚本
+│   │       └── <slug>.py        # 与 <slug>.html 成对
+│   ├── handoffs/                # 交接文档（唯一位置）
+│   │   ├── resolved/            # 已完成的交接文档
+│   │   └── YYYY-MM-DD-HHMM-slug.md
+│   ├── journal/                 # 每日开发日志（唯一位置）
+│   │   └── YYYY-MM-DD-devlog.md
+│   ├── aris/                    # ARIS skills 产出的中文翻译版（唯一位置）
+│   │   ├── ideas/ narrative/ planning/ experiments/ reviews/
+│   │   ├── methods/ wiki/ paper/ findings/
+│   │   ├── ingest-log.md        # aris 操作日志
+│   │   └── README.md            # aris 子目录索引
+│   └── deliverables/            # 正式交付物（可选）
+│
+├── archive/                     # 归档总入口（v3 统一到项目根）
+│   └── docs/                    # 文档类归档（skill 纳管的范围）
+│       ├── deprecated/          # 单个废弃文档
+│       ├── scratch/             # 从 scratch/ 提升保留的快照
+│       │   └── YYYY-MM/         # 按月分桶
+│       └── YYYY-MM-DD-<slug>/   # 按日期整体快照（如 2026-03-23-pre-split/）
+│
+└── scratch/                     # 一次性 HTML 便签（项目根，gitignored）
+    ├── README.md                # 唯一 git-tracked 文件：规则说明
+    └── YYYY-MM-DD-<slug>.html   # 用完即删；要留快照 → archive/docs/scratch/
 ```
+
+**三档 HTML 归位（v3 新增心智模型）**：
+
+| 档 | 触发条件 | 位置 | git |
+|---|---|---|---|
+| L3 长期工具 | 写回 / 复杂 join / 多人长期用 | 独立 app（如 Next.js，skill 不管） | yes |
+| L2 看板 | 重复使用、有数据源、值得维护生成器 | `docs/dashboards/` | yes |
+| L1 便签 | 一次性、用完即走 | `scratch/`（项目根） | no |
 
 **命名规则**：
 - 目录和文件名统一 lowercase-kebab-case
 - 不用文件名版本后缀（禁止 `scope_v3.md`、`results_v2.md`）
 - handoff 文件名格式：`YYYY-MM-DD-HHMM-slug.md`
+- dashboard 成对命名：`dashboards/<slug>.html` ↔ `dashboards/render/<slug>.py`
+- scratch 用日期前缀：`scratch/YYYY-MM-DD-<slug>.html`
 
 **单一来源原则**（核心设计约束）：
-- 实验数字只在 `evaluation/results.md` 里出现，其他文档引用链接，不复制数字
+
+数字权威链：
+
+```
+json / eval 产物（源头）
+    ↓ 机器渲染
+docs/dashboards/*.html（最新、可交互，不被论文或其他文档引用）
+    ↓ 人工校对摘抄
+docs/evaluation/results.md（被引用权威）
+    ↓ 链接
+其他文档（禁止硬编码数字）
+```
+
+- 实验数字只在 `evaluation/results.md` 里作为**被引用权威**出现；dashboard 是机器产物，不能被引用
 - 方法描述只在 `methods/` 里出现，其他文档引用链接，不重复描述
 - 论文叙事只在 `project/paper-plan.md` 里出现，不在 overview.md 里重复
+- `scratch/` 永远不进数字权威链——它是临时界面，不是记忆
 - 违反此原则会导致数字不一致
 
 **文档 frontmatter**（每个文档顶部）：
@@ -78,6 +115,7 @@ out-of-scope: 本文档不覆盖什么
 | `update` | → Phase: Update |
 | `status`（或无参数） | → Phase: Status |
 | `archive` | → Phase: Archive |
+| `dashboard` | → Phase: Dashboard |
 | `handoff` | → Phase: Handoff |
 | `log` | → Phase: Log |
 | `aris` | → Phase: Aris |
@@ -99,26 +137,45 @@ out-of-scope: 本文档不覆盖什么
 
 ### P2: 旧结构探测
 
-扫描 `docs/` 目录，检测以下遗留模式：
+扫描项目根和 `docs/` 目录，检测以下遗留模式：
 
-| 模式 | 示例 |
-|------|------|
-| 编号前缀目录 | `01-project/`、`02-data/`、`05-handoff/` |
-| SCREAMING_CASE 文件名 | `PROJECT_OVERVIEW.md`、`SCOPE.md` |
-| 重复 handoff 目录 | `handoff/` 和 `handoffs/` 共存 |
-| 文件名版本后缀 | `scope_v3.md`、`results_v2.md` |
-| 非标准 archive 位置 | `99-archive/`、根级 `deprecated/` |
+| 模式 | 示例 | 建议 |
+|------|------|------|
+| 编号前缀目录 | `01-project/`、`02-data/`、`05-handoff/` | init 迁移 |
+| SCREAMING_CASE 文件名 | `PROJECT_OVERVIEW.md`、`SCOPE.md` | init 迁移 |
+| 重复 handoff 目录 | `handoff/` 和 `handoffs/` 共存 | init 迁移 |
+| 文件名版本后缀 | `scope_v3.md`、`results_v2.md` | 归档到 `archive/docs/deprecated/` |
+| 非标准 archive 位置 | `docs/99-archive/`、根级 `deprecated/` | init 迁移 |
+| **v2 残留：`docs/archive/` 存在** | v3 把文档归档搬到项目根 `archive/docs/` | 报告，由用户手动迁移（本轮 skill 不自动迁） |
+| **v3 缺失：`docs/dashboards/` 不存在** | v3 新增的界面层目录 | init 补建 |
+| **v3 缺失：项目根 `scratch/` 不存在** | v3 新增的一次性 HTML 便签区 | init 补建（带 .gitignore） |
+| **dashboard 无对应生成器** | `docs/dashboards/foo.html` 存在但无 `render/foo.py` | 报告，提醒补生成器或删除 |
+| **HTML 生成器散落 `scripts/`** | `scripts/render_*.py`、`scripts/dashboard_*.py` | 报告，建议搬到 `docs/dashboards/render/` |
+| **HTML 散落项目根** | 项目根的 `dashboard.html`、`*.html`（非 skill 约定位置） | 报告，建议进 `docs/dashboards/` 或 `scratch/` |
 
 返回：发现列表 + `LEGACY_DETECTED` 布尔值。
 
+**本轮语义**：旧文档迁移（schema v1→v2 的 01-/PROJECT_/handoff 类）会在 init 场景 B 自动执行；v3 新增的 `docs/archive/` → `archive/docs/` 迁移**不自动执行**，只在报告里建议，由用户手动处理。
+
 ### P3: README 索引同步
 
-扫描 `docs/` 下所有活跃 `.md` 文件（排除 `archive/` 和 `handoffs/resolved/`），重建 `docs/README.md` 的索引表：
+扫描 `docs/` 下所有活跃文档（排除 `handoffs/resolved/`，`archive/` 已不在 `docs/` 下），重建 `docs/README.md` 的索引表：
+
+**扫描范围**：
+- 所有 `.md` 文件
+- `docs/dashboards/*.html`（界面层产物）
+
+**索引表格式**（v3 加"类型"列）：
 
 ```markdown
-| 路径 | 职责 | 状态 |
-|------|------|------|
+| 路径 | 类型 | 职责 | 状态 |
+|------|------|------|------|
+| project/overview.md | MD | 项目状态 dashboard | active |
+| evaluation/results.md | MD | 实验数字被引用权威 | active |
+| dashboards/results.html | HTML | 最新结果交互看板（刷新：`/docs dashboard render results`） | active |
 ```
+
+类型枚举：`MD` / `HTML`。
 
 保留 `docs/README.md` 的 frontmatter（含 `schema_version`）不变，只更新索引部分。
 
@@ -209,7 +266,7 @@ out-of-scope: 本文档不覆盖什么
     - 无字段或 < 当前版本 → **场景 B2：版本升级**
     - = 当前版本 → **场景 C：已就绪**
 
-当前 schema 版本：**2**
+当前 schema 版本：**3**
 
 ### 场景 A：新建
 
@@ -219,19 +276,37 @@ out-of-scope: 本文档不覆盖什么
 
 **b. 创建目录结构**
 
-始终创建：`project/`、`handoffs/`、`handoffs/resolved/`、`archive/deprecated/`
-按需创建（检测到对应代码时）：`data/`、`methods/`、`evaluation/`
+始终创建（v3）：
+- `docs/project/`、`docs/handoffs/`、`docs/handoffs/resolved/`
+- `docs/dashboards/`、`docs/dashboards/render/`（v3 新增：HTML 界面层）
+- 项目根 `archive/docs/deprecated/`、`archive/docs/scratch/`（v3 新增：统一 archive 入口，带 `.gitkeep`）
+- 项目根 `scratch/`（v3 新增：一次性 HTML 便签）
 
-**c. 生成文档骨架**
+按需创建（检测到对应代码时）：`docs/data/`、`docs/methods/`、`docs/evaluation/`
+
+**c. 更新项目根 `.gitignore`**
+
+确保以下两行存在（`scratch/` 被忽略但保留其 README）：
+
+```
+scratch/
+!scratch/README.md
+```
+
+如果 `.gitignore` 不存在则创建；已存在则追加缺失规则（幂等）。
+
+**d. 生成文档骨架**
 
 每个文档使用 frontmatter（`updated`、`status: draft`、`scope`）：
 
-- `docs/README.md`：索引 + 阅读顺序 + archive 说明。frontmatter 含 `schema_version: 2`
+- `docs/README.md`：索引 + 阅读顺序 + archive 说明（archive 说明指向项目根 `archive/docs/`）。frontmatter 含 `schema_version: 3`
 - `docs/project/overview.md`：纯 dashboard（状态、进度、链接，不放结论/叙事）
 - `docs/project/paper-plan.md`：论文规划骨架（定位、贡献 C1-Cn、叙事弧、章节结构、图表计划、时间线）
+- `docs/dashboards/README.md`：dashboard 索引 + 刷新命令说明
+- `scratch/README.md`：说明 scratch 的三条规则（一次性、不被引用、保留快照走 `/docs archive scratch`）
 - 其他按需创建的目录下放 `status: draft` 骨架文件
 
-**d. 执行 [P4: CLAUDE.md 同步]**（sync_type=`doc-section`）
+**e. 执行 [P4: CLAUDE.md 同步]**（sync_type=`doc-section`）
 
 ### 场景 B：迁移（遗留结构 / 版本升级）
 
@@ -241,32 +316,49 @@ out-of-scope: 本文档不覆盖什么
 - 目录重命名（`01-project/` → `project/`）
 - 文件重命名（`PROJECT_OVERVIEW.md` → `overview.md`）
 - handoff 目录合并（`handoff/` + `05-handoff/` → `handoffs/`）
-- 版本后缀文件归档（`scope_v3.md` → `archive/deprecated/`）
-- 非标准 archive 统一（`99-archive/` → `archive/`）
+- 版本后缀文件归档（`scope_v3.md` → `archive/docs/deprecated/`，即项目根 `archive/docs/deprecated/`）
+- 非标准 archive 统一（`docs/99-archive/` → `archive/docs/`）
 - 补建缺失的标准目录
 
 展示计划给用户，**等待确认**（使用 `AskUserQuestion`）。
+
+> **注意**：v2 残留 `docs/archive/*` 的迁移**不自动执行**，仅在输出末尾报告"建议手动 `git mv docs/archive/ archive/docs/`"，避免在用户没准备好时打乱目录。
 
 **b. 执行迁移**
 
 用户确认后：
 - 使用 `git mv` 执行重命名（保留 git 历史）
-- 补建缺失目录
-- 在 `docs/README.md` frontmatter 中写入 `schema_version: 2`
+- 补建缺失目录（含 v3 新增：`docs/dashboards/`、`archive/docs/`、`scratch/`）
+- 更新 `.gitignore`（参照场景 A.c）
+- 在 `docs/README.md` frontmatter 中写入 `schema_version: 3`
 
 **c. 执行 [P3: README 索引同步]**
 **d. 执行 [P4: CLAUDE.md 同步]**（sync_type=`doc-section`）
 
 ### 场景 B2：版本升级
 
-轻量迁移：
-1. 补建 v2 新增的标准目录（如有）
-2. 在 `docs/README.md` frontmatter 中写入 `schema_version: 2`
-3. 执行 `[P3: README 索引同步]`
+轻量迁移（适用 v1/v2 → v3）：
+1. 补建 v3 新增的标准目录（幂等，已存在跳过）：
+   - `docs/dashboards/`、`docs/dashboards/render/`
+   - 项目根 `archive/docs/deprecated/`、`archive/docs/scratch/`（带 `.gitkeep`）
+   - 项目根 `scratch/` + `scratch/README.md`
+2. 更新项目根 `.gitignore`（参照场景 A.c）
+3. 写 `docs/dashboards/README.md` 骨架（若不存在）
+4. 在 `docs/README.md` frontmatter 中写入 `schema_version: 3`
+5. 执行 `[P3: README 索引同步]`
+6. **不自动迁移** `docs/archive/*`——在输出末尾报告：
+
+   ```
+   ⚠️ 检测到 docs/archive/ 仍存在（v2 语义）。v3 语义下文档归档在项目根 archive/docs/。
+      如需迁移，手动执行：
+        git mv docs/archive/deprecated/* archive/docs/deprecated/
+        git mv docs/archive/* archive/docs/    # 快照目录
+        rmdir docs/archive/
+   ```
 
 ### 场景 C：已就绪
 
-输出：`docs/ 已是 schema v2，无需操作。运行 /docs status 查看文档健康状态。`
+输出：`docs/ 已是 schema v3，无需操作。运行 /docs status 查看文档健康状态。`
 
 ---
 
@@ -301,13 +393,58 @@ out-of-scope: 本文档不覆盖什么
 
 ## Phase: Archive
 
-`/docs archive <file>`
+`/docs archive <subcommand> [args]`
 
-单文件归档，不再支持 `archive stale`（该功能已并入 update）。
+归档统一输出到**项目根** `archive/docs/`（v3 语义），不再使用 `docs/archive/`。
 
-1. 验证文件存在于 `docs/` 下（不含 `archive/`）
-2. `git mv <file> docs/archive/deprecated/`
-3. 执行 `[P3: README 索引同步]`
+### 子命令速览
+
+| 子命令 | 行为 | 目标路径 |
+|-------|------|---------|
+| `<file>`（默认） | 单文件归档 | `archive/docs/deprecated/` |
+| `snapshot <slug>` | 批量快照整段 `docs/` 目录 | `archive/docs/YYYY-MM-DD-<slug>/` |
+| `scratch <file>` | 保留 `scratch/*.html` 的快照 | `archive/docs/scratch/YYYY-MM/` |
+| `promote <file>` | 把 `scratch/*.html` 提升为 dashboard | `docs/dashboards/` + 生成器骨架 |
+
+### `archive <file>`
+
+单文件归档。
+
+1. 验证文件存在于 `docs/` 下（不含项目根 `archive/`）
+2. 目标：`archive/docs/deprecated/`（不存在则创建，带 `.gitkeep`）
+3. `git mv <file> archive/docs/deprecated/`
+4. 执行 `[P3: README 索引同步]`
+
+### `archive snapshot <slug>`
+
+批量快照，用于文档重构或大方向调整前做完整备份。
+
+1. 目标：`archive/docs/YYYY-MM-DD-<slug>/`（不存在则创建）
+2. 列出即将被快照的 `docs/` 子目录或文件（来自 `$ARGUMENTS` 指定范围或默认全部活跃文档）
+3. 使用 `AskUserQuestion` 展示计划，等待用户确认
+4. 用户确认后 `git mv` 或 `cp -r` 到目标目录（默认 `cp -r` 保留原文件，`--move` flag 用 `git mv`）
+5. 在目标目录创建 `_reason.md` 说明快照原因
+6. 执行 `[P3: README 索引同步]`
+
+### `archive scratch <file>`
+
+保留 `scratch/` 下值得留存但不再维护的 HTML 快照。
+
+1. 验证 `scratch/<file>` 存在
+2. 目标：`archive/docs/scratch/YYYY-MM/`（按当前月份分桶，不存在则创建）
+3. 因 `scratch/` 被 `.gitignore` 排除，使用 `mv`（不是 `git mv`），然后在目标路径 `git add`
+4. **不**执行 P3（scratch 快照不进 README 索引）
+
+### `archive promote <file>`
+
+把 `scratch/*.html` 识别为有长期价值的 dashboard，迁到 `docs/dashboards/`。
+
+1. 验证 `scratch/<file>` 存在（必须是 `.html`）
+2. 从文件名解析 `<slug>`（去掉 `YYYY-MM-DD-` 前缀和 `.html` 后缀）
+3. 目标：`docs/dashboards/<slug>.html` + `docs/dashboards/render/<slug>.py`（骨架）
+4. 用 `mv` 把 HTML 搬到目标位置；生成器骨架从 `references/dashboards.md` 模板读出
+5. 提示用户：骨架生成器只是占位，需要补充实际数据源加载逻辑
+6. 执行 `[P3: README 索引同步]`（新 dashboard 进索引）
 
 ---
 
@@ -414,6 +551,27 @@ date: YYYY-MM-DD
 把写入的日志内容输出给用户确认。
 
 ---
+
+## Phase: Dashboard
+
+`/docs dashboard [list|new <slug>|render <slug>|status]`
+
+HTML 交互看板管理。详细流程见 `${CLAUDE_SKILL_DIR}/references/dashboards.md`。读取该文件后按其中步骤执行。
+
+子命令速览：
+
+| 子命令 | 行为 |
+|-------|------|
+| `list`（或无参数） | 列出 `docs/dashboards/*.html` 和对应 `render/<slug>.py`，显示上次渲染时间 |
+| `new <slug>` | 创建 `render/<slug>.py` 骨架 + 占位 `<slug>.html`（成对） |
+| `render <slug>` | 跑 `render/<slug>.py`，覆盖 `<slug>.html` |
+| `status` | 检查每个 dashboard 的 stale 状态（生成器 mtime / html mtime / 源数据 mtime） |
+
+**硬约定**（写入生成器模板）：
+- HTML 双击可打开（`file://`），不依赖 dev server
+- 数据 inline 进 `<script>`，不做 fetch
+- 样式用 Tailwind CDN 或极简内联 CSS
+- 每次 render 完整覆盖 html，不增量
 
 ## Phase: Aris
 
