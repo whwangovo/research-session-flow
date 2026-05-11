@@ -99,7 +99,6 @@ updated: YYYY-MM-DD
 status: active        # active | draft | stale | archived | resolved（仅 handoff）
 scope: 本文档覆盖什么
 out-of-scope: 本文档不覆盖什么
-session_id: xxx       # 仅 handoff：标识产出该文件的 session，immutable 约束的基础
 ---
 ```
 

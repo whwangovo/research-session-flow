@@ -13,7 +13,7 @@
 `research-session-flow` 是一个面向 Claude Code 的科研项目管理 skill。设计上有三条硬规则：
 
 - **单一来源**：`results.md` 是实验数字的唯一权威，`paper-plan.md` 是论文叙事的唯一权威，方法描述、版本日志各归其位
-- **session-first**：每个 session 必须写 handoff。handoff 是 session 粒度的 immutable append-only 日志——同 session 内原地重写，跨 session 的 handoff 内容只读
+- **handoff append-only**：每次 `/research handoff` 新建一份文件，不回改历史；历史 handoff 的"下一步"全部完成后自动 resolve 归档
 - **handoff 轻，log 重**：handoff 纯文本快速收束不碰 git；log 做日终完整收束，包含分组 commit
 
 ---
@@ -23,7 +23,7 @@
 | 子命令 | 说明 |
 |--------|------|
 | `init` | 初始化。幂等覆盖三种场景：空目录冷启动（git + README + CLAUDE.md + gitignore + docs 全套）/ 旧结构迁移 / 版本升级 |
-| `handoff` | 写当前 session 交接。同 session 内原地重写，跨 session 写新文件；自动把"下一步"全完成的历史 handoff 搬到 `resolved/` |
+| `handoff` | 每次新建一份 session 交接；"下一步"全完成的历史 handoff 自动搬到 `resolved/` |
 | `log` | 日终收尾：写当天开发日志 + 按语义类别分组 commit 未提交改动 |
 | `update` | 更新过期文档 |
 | `status` | 文档健康检查（默认子命令） |
@@ -94,8 +94,8 @@ cd research-session-flow
 
 `/research handoff` 是每个 session 的收尾动作。核心语义：
 
-- **session 粒度 immutable**：每个 handoff 归属一个 session（frontmatter `session_id`）。同 session 多次跑 → **原地重写**当前文件反映迄今所有工作；跨 session → 新建文件
-- **历史 handoff 只读**：永远不修改别人 session 的 handoff 正文；唯一合法动作是"下一步全部完成" → 整体 `mv` 到 `resolved/`
+- **append-only**：每次执行新建一份 handoff 文件，不回改历史
+- **自动 resolve**：扫描活跃 handoff，"下一步"全部完成的整体 `mv` 到 `resolved/`
 - **不碰 git**：纯文本收束，耗时可控
 - **自动同步 CLAUDE.md**：`## Last Handoff` 节指向活跃 handoff，新 session 打开项目直接看到上次停在哪
 
