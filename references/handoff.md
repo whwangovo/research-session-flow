@@ -21,9 +21,29 @@
 
 **2. 取当前 session_id**
 
-读环境变量 `$CLAUDE_SESSION_ID`（Claude Code 运行时注入）。
-- 有值 → 记为 `CUR_SID`
-- 无值（本地调试或非 Claude Code 环境）→ 用 `$(date +%Y%m%d-%H%M%S)-local` 兜底，记为 `CUR_SID`
+按优先级探测运行时，取到一个稳定的 session id 字符串记为 `CUR_SID`：
+
+| 优先级 | 运行时 | 来源 | 格式 |
+|-------|--------|------|------|
+| 1 | Claude Code | 环境变量 `$CLAUDE_SESSION_ID` | 原值，前缀 `claude-` |
+| 2 | Codex | `~/.codex/sessions/**/rollout-*.jsonl` 中 **mtime 最近且 ≤2 小时**的文件名 UUID | 前缀 `codex-` + UUID |
+| 3 | 兜底 | 时间戳 | `local-$(date +%Y%m%d-%H%M%S)` |
+
+**Codex 探测细节**：
+
+- 文件名格式：`rollout-YYYY-MM-DDTHH-MM-SS-<UUID>.jsonl`，`<UUID>` 是标准 8-4-4-4-12 的 uuid，即文件名最后 5 段用 `-` 拼接（文件名末尾 36 字符去掉 `.jsonl` 后的那段）
+- 参考提取命令：
+  ```bash
+  f=$(find ~/.codex/sessions -name 'rollout-*.jsonl' -mmin -120 -print0 2>/dev/null \
+        | xargs -0 ls -t 2>/dev/null | head -1)
+  [[ -n "$f" ]] && basename "$f" .jsonl \
+        | awk -F'-' '{n=NF; printf "codex-%s-%s-%s-%s-%s\n", $(n-4), $(n-3), $(n-2), $(n-1), $n}'
+  ```
+- Codex 的 session 文件在整个会话期间持续追加，`mtime` 随写入更新；选最近 mtime 的那个 = 当前 session
+- `-mmin -120` 是 2 小时窗口，防止误把很久以前的老 session 当成当前 session；超过阈值则走兜底（`local-*`）
+- 若同时能判定为 Claude Code（`$CLAUDE_SESSION_ID` 非空），以 Claude 为准——因为 Claude Code 运行环境下的 `~/.codex/sessions/` 可能同时有 MCP 代理写入的文件，容易串
+
+这样同一 Codex session 多次 `/research handoff` 会拿到同一个 UUID → 命中"同 session 原地重写"语义。
 
 **3. 扫描活跃 handoff 并分流**
 
