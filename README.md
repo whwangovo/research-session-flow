@@ -30,9 +30,6 @@
 | `aris` | 归档 ARIS 产出为中文版，并生成合并完整版 |
 | `dashboard` | HTML 交互看板管理（list / new / render / status） |
 
-> `new` 和 `migrate` 都是 `init` 的别名，向后兼容。
-> archive 生命周期由用户手动 `git mv` 管理——`/research archive` 当作 `status` 的别名执行。
-
 ## 触发关键词
 
 - **handoff**：说"写交接"、"交接文档"、"session 结束"、"记录一下进度"时自动触发
@@ -123,8 +120,6 @@ handoff 的五段固定结构：已完成 / 当前状态 / 关键决策 / 下一
 分组 ≥3 或文件数 ≥10 时会展示计划让你确认；否则直接执行。commit 语言 / 风格自动跟随仓库 `git log -10` 的历史习惯。敏感文件（`.env` / `*.key` / `*.pem` / `credentials*`）自动跳过并警告。
 
 **顺序关键**：先写 devlog → 再 commit。这样当天日志本身会进入 `docs:` 分组，日终 `git status` 完全干净。
-
-log 不做 `git push`——推送是独立的 deliberate 动作。
 
 ## 使用
 
